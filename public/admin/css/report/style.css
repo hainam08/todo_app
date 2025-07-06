@@ -1,0 +1,10 @@
+.date{
+    display: none;
+}
+
+.less>.year_month{
+    display: none;
+}
+.less>.date{
+    display: block;
+}

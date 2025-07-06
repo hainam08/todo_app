@@ -1,0 +1,32 @@
+.action>div>button  {
+    width: 100%
+}
+.table-light>th{
+    min-width: 300px
+}
+#search-dropdown {
+    width: 95%;
+}
+
+.btn-pick {
+    margin-right: 10px;
+}
+
+/*.border{*/
+/*    border-color: #e9ebec!important;*/
+/*}*/
+.dpl_n{
+    margin-right: 5px;
+}
+.dpl_n>h5{
+    margin-bottom: 0px;
+    /*margin-top: 2px;*/
+    padding: 7px 10px 7px 10px;
+}
+
+.ribbon-box.ribbon-fill .ribbon {
+    width: 76px;
+    height: 53px;
+    left: -32px;
+    top: -19px;
+}
