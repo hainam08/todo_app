@@ -42,7 +42,7 @@
                 <div class="collapse menu-dropdown" id="sidebarTasks">
                     <ul class="nav nav-sm flex-column">
                         <li class="nav-item">
-                            <a href="#" class="nav-link">All Tasks</a>
+                            <a href="{{route('admin.tasks.index')}}" class="nav-link">All Tasks</a>
                         </li>
                         
                     </ul>
@@ -57,7 +57,7 @@
                 <div class="collapse menu-dropdown" id="sidebarUsers">
                     <ul class="nav nav-sm flex-column">
                         <li class="nav-item">
-                            <a href="#" class="nav-link">All Users</a>
+                            <a href="{{route('admin.users.index')}}" class="nav-link">All Users</a>
                         </li>
                        
                     </ul>
@@ -66,7 +66,7 @@
 
             <!-- Statistics -->
             <li class="nav-item">
-                <a class="nav-link menu-link" href="#">
+                <a class="nav-link menu-link" href="{{route('admin.statistics.index')}}">
                     <i class="ri-bar-chart-line"></i> <span>Statistics</span>
                 </a>
             </li>

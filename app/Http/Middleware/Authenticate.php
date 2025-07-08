@@ -22,7 +22,7 @@ class Authenticate extends Middleware
         }
 
         // Mặc định cho user
-        return route('login');
+        return route('user.login');
     }
 
     

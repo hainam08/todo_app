@@ -15,14 +15,12 @@
                         <i class="ri-task-line"></i> <span>Create Task</span>
                     </a>
                 </li>
-                <li class="nav-item mt-auto">
-                    <a class="nav-link menu-link" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+               <li class="nav-item mt-auto">
+                    <a class="nav-link menu-link text-danger" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
                         <i class="ri-logout-box-line"></i> <span>Logout</span>
                     </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        @csrf
-                    </form>
                 </li>
+
             </ul>
         </div>
     </div>

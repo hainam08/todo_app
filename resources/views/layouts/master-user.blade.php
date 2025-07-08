@@ -23,6 +23,8 @@
     <script src="{{ URL::asset('build/libs/simplebar/simplebar.min.js') }}"></script>
     <script src="{{ URL::asset('build/libs/choices.js/public/assets/scripts/choices.min.js') }}"></script>
     <script src="{{ URL::asset('build/js/app.js') }}"></script>
-    @yield('script')
+    @include('user.modals.logout-modal')
+
+    @yield('scripts')
 </body>
 </html>

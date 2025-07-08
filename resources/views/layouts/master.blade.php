@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>CRM</title>
+    <title>Hai Nam</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="Transaction Management Page Of eUp Projects" name="description" />
     <meta content="Login" name="author" />

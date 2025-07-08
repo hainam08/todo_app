@@ -10,10 +10,14 @@ class Task extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['user_id', 'title', 'category', 'due_date', 'status', 'priority'];
+    protected $fillable = ['user_id', 'title','description', 'category', 'due_date', 'status', 'priority'];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+    protected $casts = [
+        'due_date' => 'date',
+        
+    ];
 }

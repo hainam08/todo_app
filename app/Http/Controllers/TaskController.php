@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Task;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
@@ -13,28 +13,39 @@ class TaskController extends Controller
         $this->middleware('auth:web');
     }
 
-    // Hiển thị danh sách task của user
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::where('user_id', Auth::id())->get();
-        return view('user.user', compact('tasks'));
+        $query = Task::where('user_id', Auth::id())->whereNull('deleted_at');
+
+        if ($request->has('search') && $request->search) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('status') && $request->status && $request->status != 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('due_date') && $request->due_date) {
+            $query->whereDate('due_date', $request->due_date);
+        }
+
+        $tasks = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('user.index', compact('tasks'));
     }
 
-    // Hiển thị form tạo task
     public function create()
     {
-        return view('todo_client'); // Modal trong todo_client xử lý tạo
+        return view('user.index');
     }
 
-    // Lưu task mới
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
-            'status' => 'required|in:pending,in_progress,completed',
-            'priority' => 'required|in:high,medium,low',
+            'status' => 'required|in:New,Inprogress,Completed,Pending',
         ]);
 
         Task::create([
@@ -43,34 +54,31 @@ class TaskController extends Controller
             'description' => $request->description,
             'due_date' => $request->due_date,
             'status' => $request->status,
-            'priority' => $request->priority,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Task created successfully.');
+        return redirect()->route('user.dashboard')->with('success', 'Thêm công việc thành công.');
     }
 
-    // Hiển thị form sửa task
     public function edit(Task $task)
     {
         if ($task->user_id !== Auth::id()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+            return redirect()->route('user.dashboard')->with('error', 'Bạn không có quyền sửa công việc này.');
         }
-        return view('todo_client', compact('task')); // Modal trong todo_client xử lý sửa
+
+        return view('user.index', compact('task'));
     }
 
-    // Cập nhật task
     public function update(Request $request, Task $task)
     {
         if ($task->user_id !== Auth::id()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+            return redirect()->route('user.dashboard')->with('error', 'Bạn không có quyền sửa công việc này.');
         }
 
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
-            'status' => 'required|in:pending,in_progress,completed',
-            'priority' => 'required|in:high,medium,low',
+            'status' => 'required|in:New,Inprogress,Completed,Pending',
         ]);
 
         $task->update([
@@ -78,20 +86,53 @@ class TaskController extends Controller
             'description' => $request->description,
             'due_date' => $request->due_date,
             'status' => $request->status,
-            'priority' => $request->priority,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Task updated successfully.');
+        return redirect()->route('user.dashboard')->with('success', 'Cập nhật công việc thành công.');
     }
 
-    // Xóa task
     public function destroy(Task $task)
     {
         if ($task->user_id !== Auth::id()) {
-            return redirect()->route('dashboard')->with('error', 'Unauthorized access.');
+            return redirect()->route('user.dashboard')->with('error', 'Bạn không có quyền xóa công việc này.');
         }
 
         $task->delete();
-        return redirect()->route('dashboard')->with('success', 'Task deleted successfully.');
+
+        return redirect()->route('user.dashboard')->with('success', 'Xóa công việc thành công.');
     }
+
+    // public function toggleStatus(Task $task)
+    // {
+    //     if ($task->user_id !== Auth::id()) {
+    //         return redirect()->route('user.dashboard')->with('error', 'Bạn không có quyền thay đổi trạng thái công việc này.');
+    //     }
+
+    //     // Kiểm tra trạng thái hiện tại và chỉ toggle giữa Completed và Inprogress
+    //     $newStatus = in_array($task->status, ['New', 'Inprogress', 'Completed', 'Pending'])
+    //         ? ($task->status === 'Completed' ? 'Inprogress' : 'Completed')
+    //         : 'Inprogress';
+
+    //     $task->update([
+    //         'status' => $newStatus,
+    //     ]);
+
+    //     return redirect()->route('user.dashboard')->with('success', 'Cập nhật trạng thái công việc thành công.');
+    // }
+    public function bulkComplete(Request $request)
+{
+    $taskIds = $request->input('task_ids', []);
+
+    if (empty($taskIds)) {
+        return redirect()->route('user.dashboard')->with('error', 'Vui lòng chọn ít nhất một công việc.');
+    }
+
+    Task::whereIn('id', $taskIds)
+        ->where('user_id', Auth::id())
+        ->update(['status' => 'Completed']);
+
+    return redirect()->route('user.dashboard')->with('success', 'Đã cập nhật trạng thái hoàn thành cho các công việc đã chọn.');
 }
+
+}
+?>

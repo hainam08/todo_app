@@ -4,8 +4,10 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\AdminTaskController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -25,32 +27,55 @@ use Illuminate\Support\Facades\Route;
 // Route::get('/sign_in', function () {
 //     return view('auth.sign-in');
 // });
-// Route::get('/home', function () {
-//     return view('home');
-// });
-// Route::get('/sign_up', function () {
-//     return view('auth.sign-up');
-// });
+Route::get('/test', function () {
+    return view('test');
+});
+Route::get('/demo', function () {
+    return view('demo');
+});
 
 
-Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('login', [LoginController::class, 'login']);
+
 Route::get('register', [LoginController::class, 'showRegisterForm'])->name('register');
 Route::post('register', [LoginController::class, 'register']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-Route::post('admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
 
-Route::middleware(['auth:web'])->group(function () {
-    Route::get('dashboard', [TaskController::class, 'index'])->name('dashboard');
-    Route::resource('tasks', TaskController::class);
+Route::middleware('guest:web')->group(function(){
+    Route::get('/login', [LoginController::class, 'showUserLoginForm'])->name('user.login');
+    Route::post('/login', [LoginController::class, 'userLogin']);
 });
 
+Route::middleware(['auth:web'])->group(function () {
+    Route::get('user/dashboard', [TaskController::class, 'index'])->name('user.dashboard');
+    Route::post('bulk-complete-tasks', [TaskController::class, 'bulkComplete'])->name('tasks.bulk-complete');
+    Route::patch('tasks/{task}/toggle', [TaskController::class, 'toggleStatus'])->name('tasks.toggle');
+    Route::resource('tasks', TaskController::class);
+    
+      
+});
+Route::middleware('guest:admin')->prefix('admin')->group(function(){
+    Route::get('login', [LoginController::class, 'showAdminLoginForm'])->name('admin.login');
+    Route::post('login', [LoginController::class, 'adminLogin']);
+});
+Route::post('admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
+
+
+
+
 Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
+    Route::get('admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('admin/statistics', [AdminController::class, 'statistics'])->name('admin.statistics.index');
     Route::get('dashboard', [AdminTaskController::class, 'index'])->name('admin.dashboard');
-    Route::get('tasks', [AdminTaskController::class, 'index'])->name('admin.tasks.index');
-    Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');
-    Route::get('statistics', [AdminUserController::class, 'statistics'])->name('admin.statistics');
+    Route::get('admin/tasks', [AdminTaskController::class, 'index'])->name('admin.tasks.index');
+    Route::get('admin/tasks/{id}/edit', [AdminTaskController::class, 'edit'])->name('admin.tasks.edit');
+    Route::patch('admin/tasks/{id}', [AdminTaskController::class, 'update'])->name('admin.tasks.update');
+    Route::delete('admin/tasks/{id}', [AdminTaskController::class, 'destroy'])->name('admin.tasks.destroy');
+    Route::get('admin/users', [AdminUserController::class, 'index'])->name('admin.users.index');
+    Route::get('admin/users/{id}', [AdminUserController::class, 'show'])->name('admin.users.show');
+    Route::patch('admin/users/{id}/toggle-lock', [AdminUserController::class, 'toggleLock'])->name('admin.users.toggle-lock');
+    Route::delete('admin/users/{id}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
     Route::get('/', function () {
     return view('home');
 });
 });
+

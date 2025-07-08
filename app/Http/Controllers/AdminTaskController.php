@@ -2,88 +2,105 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminTaskController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth:admin');
+        $this->middleware(['auth:admin', 'admin']);
     }
 
-    // Hiển thị danh sách tất cả task
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::with('user')->get(); // Lấy tất cả task kèm thông tin user
-        $users = User::all(); // Lấy danh sách user để gán khi tạo/sửa task
-        return view('admin.admin', compact('tasks', 'users'));
+        $query = Task::query();
+
+        if ($request->has('search') && $request->search) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('status') && $request->status && $request->status != 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('due_date') && $request->due_date) {
+            $query->whereDate('due_date', $request->due_date);
+        }
+
+        if ($request->has('user_id') && $request->user_id) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        $tasks = $query->with('user')->orderBy('created_at', 'desc')->paginate(10);
+        $users = User::select('id', 'name')->get();
+
+        return view('admin.tasks', compact('tasks', 'users'));
     }
 
-    // Hiển thị form tạo task
-    public function create()
+    public function edit($id)
     {
-        $users = User::all(); // Lấy danh sách user để chọn trong form
-        return view('admin.tasks.create', compact('users'));
+        $task = Task::findOrFail($id);
+        return view('admin.tasks-edit', compact('task'));
     }
 
-    // Lưu task mới
-    public function store(Request $request)
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'status' => 'required|in:pending,in_progress,completed',
-        ]);
+        try {
+            $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'due_date' => 'nullable|date',
+                'status' => 'required|in:New,Inprogress,Completed,Pending',
+            ]);
 
-        Task::create([
-            'user_id' => $request->user_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'status' => $request->status,
-        ]);
+            $task = Task::findOrFail($id);
+            $task->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'due_date' => $request->due_date,
+                'status' => $request->status,
+            ]);
 
-        return redirect()->route('admin.tasks.index')->with('success', 'Task created successfully.');
+            return redirect()->route('admin.tasks.index', [
+                'search' => $request->search,
+                'status' => $request->status,
+                'due_date' => $request->due_date,
+                'user_id' => $request->user_id,
+            ])->with('success', 'Cập nhật công việc thành công.');
+        } catch (\Exception $e) {
+            Log::error('Error in update: ' . $e->getMessage());
+            return redirect()->route('admin.tasks.index', [
+                'search' => $request->search,
+                'status' => $request->status,
+                'due_date' => $request->due_date,
+                'user_id' => $request->user_id,
+            ])->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 
-    // Hiển thị form sửa task
-    public function edit(Task $task)
+    public function destroy(Request $request, $id)
     {
-        $users = User::all();
-        return view('admin.tasks.edit', compact('task', 'users'));
-    }
-
-    // Cập nhật task
-    public function update(Request $request, Task $task)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'nullable|date',
-            'status' => 'required|in:pending,in_progress,completed',
-        ]);
-
-        $task->update([
-            'user_id' => $request->user_id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'status' => $request->status,
-        ]);
-
-        return redirect()->route('admin.tasks.index')->with('success', 'Task updated successfully.');
-    }
-
-    // Xóa task
-    public function destroy(Task $task)
-    {
-        $task->delete();
-        return redirect()->route('admin.tasks.index')->with('success', 'Task deleted successfully.');
+        try {
+            $task = Task::findOrFail($id);
+            $task->delete();
+            return redirect()->route('admin.tasks.index', [
+                'search' => $request->search,
+                'status' => $request->status,
+                'due_date' => $request->due_date,
+                'user_id' => $request->user_id,
+            ])->with('success', 'Xóa công việc thành công.');
+        } catch (\Exception $e) {
+            Log::error('Error in destroy: ' . $e->getMessage());
+            return redirect()->route('admin.tasks.index', [
+                'search' => $request->search,
+                'status' => $request->status,
+                'due_date' => $request->due_date,
+                'user_id' => $request->user_id,
+            ])->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
     }
 }
+?>
