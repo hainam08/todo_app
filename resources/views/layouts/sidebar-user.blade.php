@@ -6,13 +6,13 @@
         <div class="px-4 mx-n4" data-simplebar style="height: calc(100vh - 100px);">
             <ul class="navbar-nav list-unstyled">
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="# }}">
+                    <a class="nav-link menu-link" href="{{route('user.dashboard')}}">
                         <i class="ri-dashboard-line"></i> <span>Dashboard</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="#">
-                        <i class="ri-task-line"></i> <span>Create Task</span>
+                    <a class="nav-link menu-link" href="{{route('user.index')}}">
+                        <i class="ri-task-line"></i> <span>All Task</span>
                     </a>
                 </li>
                <li class="nav-item mt-auto">

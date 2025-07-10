@@ -41,6 +41,9 @@
                                 <p class="text-muted">Sign in as User or Admin to continue to Hai Nam.</p>
                             </div>
                             <div class="p-2 mt-4">
+                              
+
+
                                 <form action="{{ route('login') }}" method="POST">
                                     @csrf
                                     <div class="mb-3">

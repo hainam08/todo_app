@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Carbon;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,10 @@ class TaskController extends Controller
     public function __construct()
     {
         $this->middleware('auth:web');
+    }
+    public function dash()
+    {
+        return view('user.dashboard');
     }
 
     public function index(Request $request)
@@ -41,22 +46,31 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'status' => 'required|in:New,Inprogress,Completed,Pending',
         ]);
+        $dueDate = Carbon::parse($request->due_date, 'Asia/Ho_Chi_Minh');
+
+        $remindAt = $request->filled('remind_at')
+            ? Carbon::parse($request->remind_at, 'Asia/Ho_Chi_Minh')
+            : $dueDate->copy()->subMinutes(15);
+
+       
 
         Task::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
             'description' => $request->description,
-            'due_date' => $request->due_date,
+            'due_date' => $dueDate,
+            'remind_at' => $remindAt,
             'status' => $request->status,
         ]);
+        //  dd($remindAt,$dueDate);
 
-        return redirect()->route('user.dashboard')->with('success', 'Thêm công việc thành công.');
+        return redirect()->route('user.index')->with('success', 'Thêm công việc thành công.');
     }
 
     public function edit(Task $task)
@@ -80,15 +94,23 @@ class TaskController extends Controller
             'due_date' => 'nullable|date',
             'status' => 'required|in:New,Inprogress,Completed,Pending',
         ]);
+        $dueDate = $request->filled('due_date')
+            ? Carbon::parse($request->due_date, 'Asia/Ho_Chi_Minh')
+            : null;
+
+        $remindAt = $request->filled('remind_at')
+            ? Carbon::parse($request->remind_at, 'Asia/Ho_Chi_Minh')
+            : ($dueDate ? $dueDate->copy()->subMinutes(15) : null);
 
         $task->update([
             'title' => $request->title,
             'description' => $request->description,
-            'due_date' => $request->due_date,
+            'due_date' => $dueDate,
+            'remind_at' => $remindAt,
             'status' => $request->status,
         ]);
 
-        return redirect()->route('user.dashboard')->with('success', 'Cập nhật công việc thành công.');
+        return redirect()->route('user.index')->with('success', 'Cập nhật công việc thành công.');
     }
 
     public function destroy(Task $task)
@@ -99,7 +121,7 @@ class TaskController extends Controller
 
         $task->delete();
 
-        return redirect()->route('user.dashboard')->with('success', 'Xóa công việc thành công.');
+        return redirect()->route('user.index')->with('success', 'Xóa công việc thành công.');
     }
 
     // public function toggleStatus(Task $task)
@@ -119,20 +141,30 @@ class TaskController extends Controller
 
     //     return redirect()->route('user.dashboard')->with('success', 'Cập nhật trạng thái công việc thành công.');
     // }
-    public function bulkComplete(Request $request)
-{
-    $taskIds = $request->input('task_ids', []);
+    public function toggleReminder(Task $task)
+    {
+        if ($task->user_id !== Auth::id()) {
+            abort(403);
+        }
 
-    if (empty($taskIds)) {
-        return redirect()->route('user.dashboard')->with('error', 'Vui lòng chọn ít nhất một công việc.');
+        $task->is_reminder_enabled = !$task->is_reminder_enabled;
+        $task->save();
+
+        return redirect()->back()->with('success', 'Cập nhật trạng thái nhắc nhở thành công.');
     }
 
-    Task::whereIn('id', $taskIds)
-        ->where('user_id', Auth::id())
-        ->update(['status' => 'Completed']);
+    public function bulkComplete(Request $request)
+    {
+        $taskIds = $request->input('task_ids', []);
 
-    return redirect()->route('user.dashboard')->with('success', 'Đã cập nhật trạng thái hoàn thành cho các công việc đã chọn.');
-}
+        if (empty($taskIds)) {
+            return redirect()->route('user.index')->with('error', 'Vui lòng chọn ít nhất một công việc.');
+        }
 
+        Task::whereIn('id', $taskIds)
+            ->where('user_id', Auth::id())
+            ->update(['status' => 'Completed']);
+
+        return redirect()->route('user.index')->with('success', 'Đã cập nhật trạng thái hoàn thành cho các công việc đã chọn.');
+    }
 }
-?>

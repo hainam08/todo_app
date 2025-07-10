@@ -31,6 +31,17 @@
                         @enderror
                     </div>
                     <div class="mb-3">
+                        <label for="remind_at" class="form-label">Thời gian nhắc (tùy chọn):</label>
+                        <input type="datetime-local" class="form-control @error('remind_at') is-invalid @enderror"
+                            name="remind_at" id="remind_at"
+                            value="{{ old('remind_at', $task->remind_at ? \Carbon\Carbon::parse($task->remind_at)->format('Y-m-d\TH:i') : '') }}">
+                        <small class="text-muted">Nếu không chọn, hệ thống sẽ nhắc trước 15 phút so với hạn hoàn thành.</small>
+                        @error('remind_at')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="mb-3">
                         <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
                         <select name="status" class="form-control @error('status') is-invalid @enderror">
                             <option value="New" {{ old('status', $task->status) == 'New' ? 'selected' : '' }}>Mới tạo</option>

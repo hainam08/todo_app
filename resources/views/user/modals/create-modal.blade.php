@@ -24,11 +24,21 @@
                     </div>
                     <div class="mb-3">
                         <label for="due_date" class="form-label">Hạn hoàn thành</label>
-                        <input type="date" name="due_date" class="form-control @error('due_date') is-invalid @enderror" value="{{ old('due_date') }}">
+                        <input type="datetime-local" name="due_date" class="form-control @error('due_date') is-invalid @enderror" value="{{ old('due_date') }}">
                         @error('due_date')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        
+
+
                     </div>
+                    <div class="mb-3">
+                            <label for="remind_at" class="form-label">Thời gian nhắc (tùy chọn):</label>
+                            <input type="datetime-local" name="remind_at" id="remind_at"
+                                class="form-control rounded-3 shadow-sm border border-secondary-subtle" />
+
+                            <small class="text-muted">Nếu không chọn, hệ thống sẽ tự nhắc trước 15 phút.</small>
+                        </div>
                     <div class="mb-3">
                         <label for="status" class="form-label">Trạng thái <span class="text-danger">*</span></label>
                         <select name="status" class="form-control @error('status') is-invalid @enderror">

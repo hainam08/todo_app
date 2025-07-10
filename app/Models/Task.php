@@ -10,7 +10,7 @@ class Task extends Model
     use HasFactory;
     use SoftDeletes;
 
-    protected $fillable = ['user_id', 'title','description', 'category', 'due_date', 'status', 'priority'];
+    protected $fillable = ['user_id', 'title','description', 'category', 'due_date','remind_at','is_reminder_enabled', 'status', 'priority'];
 
     public function user()
     {
@@ -18,6 +18,6 @@ class Task extends Model
     }
     protected $casts = [
         'due_date' => 'date',
-        
+        'is_reminder_enabled'=>'boolean',
     ];
 }

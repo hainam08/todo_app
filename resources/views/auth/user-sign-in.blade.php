@@ -3,6 +3,22 @@
 @lang('translation.signin')
 @endsection
 @section('content')
+<style>
+.auto-dismiss {
+    animation: fadeOut 0.5s ease-in-out 3s forwards;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+        height: 0;
+        padding: 0;
+        margin: 0;
+    }
+}
+</style>
+
 <div class="auth-page-wrapper pt-5">
     <!-- auth page bg -->
     <div class="auth-one-bg-position auth-one-bg" id="auth-particles">
@@ -41,6 +57,12 @@
                                 <p class="text-muted">Sign in as User to continue to Hai Nam.</p>
                             </div>
                             <div class="p-2 mt-4">
+                                @if (session('success'))
+                                    <div class="alert alert-success alert-dismissible auto-dismiss " role="alert">
+                                        {{ session('success') }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                @endif
                                 <form action="{{ route('user.login') }}" method="POST">
                                     @csrf
                                     <div class="mb-3">

@@ -7,10 +7,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Admin;
+use App\Mail\WelcomeMail;
+use App\Jobs\SendWelcomeEmail;
+use Illuminate\Support\Facades\Mail;
 class LoginController extends Controller
 {
     public function showUserLoginForm()
     {
+        // dd(session()->all());
         return view('auth.user-sign-in');
     }
     public function showAdminLoginForm(){
@@ -28,7 +32,7 @@ class LoginController extends Controller
                 Auth::logout();
                 return back()->withErrors(['email' => 'Your account is locked']);
             }
-            return redirect()->route('user.dashboard');
+            return redirect()->route('user.dashboard')->with('success', 'Đăng nhập thành công');
         }
 
         return back()->withErrors(['email' => 'Invalid credentials']);
@@ -61,12 +65,12 @@ class LoginController extends Controller
             'password' => 'required|string|min:8|max:50|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
         ]);
 
-        User::create([
+       $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
-
+          SendWelcomeEmail::dispatch($user);
         return redirect()->route('user.login')->with('success', 'Registration successful. Please login.');
     }
 

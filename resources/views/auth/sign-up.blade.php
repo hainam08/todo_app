@@ -40,11 +40,10 @@
                                 <p class="text-muted">Get your free Hai Nam account now</p>
                             </div>
                             <div class="p-2 mt-4">
-                                @if (session('success'))
-                                    <div class="alert alert-success">
-                                        {{ session('success') }}
-                                    </div>
-                                @endif
+                               {{-- <div class="alert alert-success" role="alert">
+                                    <strong>Debug:</strong> {{ session('success') ?? 'Không có thông báo' }}
+                                </div> --}}
+                                
                                 <form class="needs-validation" novalidate action="{{ route('register') }}" method="POST">
                                     @csrf
                                     <div class="mb-3">

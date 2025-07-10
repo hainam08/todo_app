@@ -14,7 +14,7 @@
 
     @yield('body')
   
-    @yield('content')   
+    @yield('content')
     
     @include('layouts.vendor-scripts')
     </body>

@@ -8,6 +8,8 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -41,12 +43,14 @@ Route::post('register', [LoginController::class, 'register']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('guest:web')->group(function(){
-    Route::get('/login', [LoginController::class, 'showUserLoginForm'])->name('user.login');
+    Route::get('/login', [LoginController::class, 'showUserLoginForm'])->name('user.login')->withoutMiddleware('guest:web');
     Route::post('/login', [LoginController::class, 'userLogin']);
 });
 
 Route::middleware(['auth:web'])->group(function () {
-    Route::get('user/dashboard', [TaskController::class, 'index'])->name('user.dashboard');
+    Route::get('user/dashboard', [TaskController::class, 'dash'])->name('user.dashboard');
+    Route::get('user/index', [TaskController::class, 'index'])->name('user.index');
+    Route::post('/tasks/{task}/toggle-reminder', [TaskController::class, 'toggleReminder'])->name('tasks.toggleReminder');
     Route::post('bulk-complete-tasks', [TaskController::class, 'bulkComplete'])->name('tasks.bulk-complete');
     Route::patch('tasks/{task}/toggle', [TaskController::class, 'toggleStatus'])->name('tasks.toggle');
     Route::resource('tasks', TaskController::class);
@@ -79,3 +83,12 @@ Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
 });
 });
 
+Route::get('/test-mail', function () {
+    $task = \App\Models\Task::find(34);
+    Mail::to($task->user->email)->send(new \App\Mail\TaskReminderMail($task));
+    return 'Gửi thử thành công!';
+});
+Route::get('/test-reminder', function () {
+    dispatch(new \App\Jobs\SendTaskReminderEmail());
+    return 'Đã dispatch job reminder!';
+});

@@ -3,6 +3,7 @@
 @section('title', 'Danh sách công việc')
 
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     .status-checkbox {
         transform: scale(1.5);
@@ -15,20 +16,33 @@
     .status-label {
         cursor: pointer;
     }
+    .auto-dismiss {
+    animation: fadeOut 0.5s ease-in-out 3s forwards;
+    }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+                height: 0;
+                padding: 0;
+                margin: 0;
+            }
+        }
 </style>
 
 <div class="container mt-5">
     <h2>Danh sách công việc</h2>
 
     @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
+        <div class="alert alert-success auto-dismiss ">{{ session('success') }}</div>
     @endif
     @if (session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger auto-dismiss">{{ session('error') }}</div>
     @endif
 
     <!-- Form tìm kiếm và lọc -->
-    <form method="GET" action="{{ route('user.dashboard') }}" class="mb-4">
+    <form method="GET" action="{{ route('user.index') }}" class="mb-4">
         <div class="row g-3">
             <div class="col-md-4">
                 <input type="text" name="search" class="form-control" placeholder="Tìm kiếm theo tiêu đề" value="{{ request('search') }}">
@@ -71,6 +85,7 @@
                     <th>Tiêu đề</th>
                     <th>Mô tả</th>
                     <th>Hạn hoàn thành</th>
+                    <th>Thời gian nhắc </th>
                     <th>Trạng thái</th>
                     <th>Hành động</th>
                 </tr>
@@ -84,6 +99,22 @@
                         <td>{{ $task->title }}</td>
                         <td>{{ $task->description ?? 'Không có' }}</td>
                         <td>{{ $task->due_date ? $task->due_date->format('d/m/Y') : 'Không có' }}</td>
+                       <td>
+                            {{ $task->remind_at ? \Carbon\Carbon::parse($task->remind_at)->format('d/m/Y H:i') : 'Không có' }}
+
+                            <form action="{{ route('tasks.toggleReminder', $task->id) }}" method="POST" style="display:inline-block; margin-left:10px;">
+                                @csrf
+                               
+                                  <button type="submit" class="btn btn-sm border-0 bg-transparent">
+                                    @if ($task->is_reminder_enabled)
+                                        <i class="fas fa-bell text-success" title="Nhắc nhở đang bật"></i>
+                                    @else
+                                        <i class="fas fa-bell-slash text-muted" title="Nhắc nhở đang tắt"></i>
+                                    @endif
+                                </button>
+                            </form>
+                        </td>
+
                         <td>
                             <!-- Form cập nhật trạng thái riêng -->
                             <form action="{{ route('tasks.update', $task) }}" method="POST">

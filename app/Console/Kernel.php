@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Console;
-
+use App\Jobs\SendTaskReminderEmail;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+         $schedule->job(new SendTaskReminderEmail)->everyMinute(); // chạy mỗi phút
     }
 
     /**
@@ -24,4 +25,8 @@ class Kernel extends ConsoleKernel
 
         require base_path('routes/console.php');
     }
+
+    
+
+
 }
