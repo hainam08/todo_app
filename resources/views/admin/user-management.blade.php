@@ -86,13 +86,16 @@
                                             </form>
                                         </li>
                                         <li class="list-inline-item">
-                                            <a class="text-danger remove-item-btn" data-bs-toggle="modal" href="#deleteUserModal" data-id="{{ $user->id }}" data-link="{{ route('admin.users.destroy', $user->id) }}" title="Xóa">
+                                            <a class="text-danger" data-bs-toggle="modal" href="#deleteUserModal{{ $user->id }}" title="Xóa">
+
                                                 <i class="ri-delete-bin-5-fill fs-16"></i>
                                             </a>
                                         </li>
                                     </ul>
                                 </td>
                             </tr>
+                            @include('admin.modal.delete_modal')
+
                         @empty
                             <tr>
                                 <td colspan="6" class="text-center">Chưa có người dùng nào.</td>
@@ -106,41 +109,15 @@
         </div>
     </div>
 
-    <!-- Modal xóa user -->
-    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteUserModalLabel">Xác nhận xóa</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    Bạn có chắc muốn xóa người dùng này? Hành động này không thể hoàn tác.
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <form id="deleteUserForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Xóa</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 </div>
 @endsection
 
 @section('scripts')
 <script src="{{ URL::asset('build/libs/sweetalert2/sweetalert2.min.js') }}"></script>
 <script>
-    // Xử lý modal xóa
-    document.querySelectorAll('.remove-item-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const deleteForm = document.getElementById('deleteUserForm');
-            deleteForm.action = this.getAttribute('data-link');
-        });
-    });
+   
+  
 
     // Hiển thị SweetAlert
     @if (session('success'))

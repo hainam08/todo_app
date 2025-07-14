@@ -10,4 +10,22 @@
         @endif
     <h2>Xin chào {{Auth::user()->name}}</h2>
     <p>Chào mừng bạn đến với todo app</p>
+    <div class="card">
+    <div class="card-header">
+        <h5>Thông báo</h5>
+    </div>
+    <ul class="list-group">
+    @forelse($notifications as $noti)
+        <li class="list-group-item">
+            {!! $noti->data['message'] !!}
+            <br>
+            <small class="text-muted">{{ $noti->created_at->diffForHumans() }}</small>
+        </li>
+    @empty
+        <li class="list-group-item">Không có thông báo nào.</li>
+    @endforelse
+</ul>
+
+</div>
+
 @endsection

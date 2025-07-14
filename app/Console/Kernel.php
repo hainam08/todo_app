@@ -4,6 +4,7 @@ namespace App\Console;
 use App\Jobs\SendTaskReminderEmail;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Jobs\SendTaskReminderNotification;
 
 class Kernel extends ConsoleKernel
 {
@@ -14,6 +15,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
          $schedule->job(new SendTaskReminderEmail)->everyMinute(); // chạy mỗi phút
+          $schedule->job(new SendTaskReminderNotification)->everyMinute();
     }
 
     /**

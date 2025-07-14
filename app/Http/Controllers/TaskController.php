@@ -15,7 +15,12 @@ class TaskController extends Controller
     }
     public function dash()
     {
-        return view('user.dashboard');
+
+        $notifications = auth()->user()->notifications()->latest()->take(5)->get();
+        
+        return view('user.dashboard', compact('notifications'));
+       
+
     }
 
     public function index(Request $request)
@@ -46,7 +51,7 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
-         $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
@@ -58,7 +63,7 @@ class TaskController extends Controller
             ? Carbon::parse($request->remind_at, 'Asia/Ho_Chi_Minh')
             : $dueDate->copy()->subMinutes(15);
 
-       
+
 
         Task::create([
             'user_id' => Auth::id(),
@@ -144,7 +149,7 @@ class TaskController extends Controller
     public function toggleReminder(Task $task)
     {
         if ($task->user_id !== Auth::id()) {
-            abort(403);
+            abort(403, 'Bạn không có quyền truy cập');
         }
 
         $task->is_reminder_enabled = !$task->is_reminder_enabled;

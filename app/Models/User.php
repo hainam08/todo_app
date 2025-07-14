@@ -9,10 +9,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
     use SoftDeletes;
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -23,6 +25,9 @@ class User extends Authenticatable
         'email',
         'password',
         'is_locked',
+        'is_active',
+        'verification_token',
+        'verification_token_created_at',
     ];
 
     /**

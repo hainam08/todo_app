@@ -1,15 +1,20 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Task;
 use App\Models\Admin;
 use App\Mail\WelcomeMail;
 use App\Jobs\SendWelcomeEmail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+
 class LoginController extends Controller
 {
     public function showUserLoginForm()
@@ -17,8 +22,9 @@ class LoginController extends Controller
         // dd(session()->all());
         return view('auth.user-sign-in');
     }
-    public function showAdminLoginForm(){
-       return view('auth.admin-sign-in');
+    public function showAdminLoginForm()
+    {
+        return view('auth.admin-sign-in');
     }
     public function userLogin(Request $request)
     {
@@ -28,14 +34,19 @@ class LoginController extends Controller
         ]);
 
         if (Auth::guard('web')->attempt($credentials)) {
+            $user = Auth::user();
             if (Auth::user()->is_locked) {
                 Auth::logout();
                 return back()->withErrors(['email' => 'Your account is locked']);
             }
+            if (!$user->is_active) {
+                Auth::logout();
+                return back()->withInput()->withErrors(['email' => 'Tài khoản của bạn chưa được xác minh. Vui lòng kiểm tra email.']);
+            }
             return redirect()->route('user.dashboard')->with('success', 'Đăng nhập thành công');
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        return back()->withInput()->withErrors(['email' => 'Invalid credentials']);
     }
     public function adminLogin(Request $request)
     {
@@ -64,14 +75,19 @@ class LoginController extends Controller
             'email' => 'required|string|email|max:255|unique:users|unique:admins',
             'password' => 'required|string|min:8|max:50|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/',
         ]);
-
-       $user = User::create([
+        $minute = Task::MINUTES_TO_EXPIRE;
+        $token = Str::random(64);
+        $tokenCreatedAt = Carbon::now('Asia/Ho_Chi_Minh');
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'verification_token' => $token,
+            'verification_token_created_at' => $tokenCreatedAt,
+            'is_active' => false,
         ]);
-          SendWelcomeEmail::dispatch($user);
-        return redirect()->route('user.login')->with('success', 'Registration successful. Please login.');
+        SendWelcomeEmail::dispatch($user);
+        return redirect()->route('user.login')->with('success', "Đăng ký thành công, vui lòng check email để kích hoạt tài khoản. Yêu cầu xác thực có hiệu lực trong vòng {$minute} phút",);
     }
 
     public function logout(Request $request)

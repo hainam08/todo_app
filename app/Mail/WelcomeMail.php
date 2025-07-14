@@ -17,9 +17,11 @@ class WelcomeMail extends Mailable
      * Create a new message instance.
      */
     public $user;
+    public $url;
     public function __construct($user)
     {
           $this->user = $user;
+          $this->url = url('/verify/' . $user->verification_token);
     }
 
     /**
@@ -41,6 +43,7 @@ class WelcomeMail extends Mailable
             view: 'emails.welcome',
             with:[
                 'user'=> $this->user,
+                'url'=>$this->url,
             ]
         );
     }
