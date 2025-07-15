@@ -50,6 +50,8 @@
             </div>
         </div>
     </div>
+    @include('admin.modal.logout_modal')
+
     {{-- End Preloader --}}
     @include ('layouts.php-to-javascript')
     <!-- JAVASCRIPT -->

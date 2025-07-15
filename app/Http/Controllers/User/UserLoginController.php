@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -15,17 +15,14 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
-class LoginController extends Controller
+class UserLoginController extends Controller
 {
     public function showUserLoginForm()
     {
         // dd(session()->all());
         return view('auth.user-sign-in');
     }
-    public function showAdminLoginForm()
-    {
-        return view('auth.admin-sign-in');
-    }
+   
     public function userLogin(Request $request)
     {
         $credentials = $request->validate([
@@ -48,21 +45,7 @@ class LoginController extends Controller
 
         return back()->withInput()->withErrors(['email' => 'Invalid credentials']);
     }
-    public function adminLogin(Request $request)
-    {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $admin = Admin::where('email', $credentials['email'])->first();
-        if ($admin && Hash::check($credentials['password'], $admin->password)) {
-            Auth::guard('admin')->login($admin);
-            return redirect()->route('admin.dashboard');
-        }
-
-        return back()->withErrors(['email' => 'Invalid credentials']);
-    }
+    
     public function showRegisterForm()
     {
         return view('auth.sign-up');
@@ -92,17 +75,12 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        if (Auth::guard('admin')->check()) {
-            Auth::guard('admin')->logout();
-            $route = 'admin.login';
-        } else {
-            Auth::guard('web')->logout();
-            $route = 'user.login';
-        }
-
+        
+        Auth::guard('web')->logout();
+            
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route($route);
+        return redirect()->route('user.login');
     }
 }

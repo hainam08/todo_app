@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;   
+use Illuminate\Database\Eloquent\SoftDeletes;
 class Task extends Model
 {
     use HasFactory;
@@ -12,10 +12,12 @@ class Task extends Model
 
     protected $fillable = ['user_id', 'title','description', 'category', 'due_date','remind_at','is_reminder_enabled', 'status', 'priority'];
     public const MINUTES_TO_EXPIRE = 5;
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     protected $casts = [
         'due_date' => 'date',
         'is_reminder_enabled'=>'boolean',

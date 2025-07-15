@@ -75,12 +75,9 @@
 
             <!-- Logout -->
             <li class="nav-item">
-                <a class="nav-link menu-link" href="{{route('admin.logout')}}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <a class="nav-link menu-link" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
                     <i class="ri-logout-box-line"></i> <span>Logout</span>
                 </a>
-               <form id="logout-form" action="{{route('admin.logout')}}" method="POST" style="display: none;"> 
-                    @csrf
-                </form>
             </li>
         </ul>
     </div>

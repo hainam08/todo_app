@@ -1,17 +1,18 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\AdminTaskController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\TaskController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\AdminLoginController;
+
+use App\Http\Controllers\Admin\AdminTaskController;
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\User\TaskController;
+use App\Http\Controllers\Admin\AdminController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\VerificationController;
-
+use App\Http\Controllers\User\UserLoginController;
 use App\Models\User;
 use App\Models\Task;
 use App\Notifications\TaskReminderNotification;
@@ -42,15 +43,15 @@ Route::get('/demo', function () {
 });
 
 
-Route::get('register', [LoginController::class, 'showRegisterForm'])->name('register');
-Route::post('register', [LoginController::class, 'register']);
-Route::post('logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('register', [UserLoginController::class, 'showRegisterForm'])->name('register');
+Route::post('register', [UserLoginController::class, 'register']);
+Route::post('logout', [UserLoginController::class, 'logout'])->name('logout');
 Route::get('/verify/{token}', [AuthController::class, 'verify']);
 Route::post('/resend-verification', [VerificationController::class, 'resend'])->name('user.resend.verification');
 
 Route::middleware('guest:web')->group(function () {
-    Route::get('/login', [LoginController::class, 'showUserLoginForm'])->name('user.login')->withoutMiddleware('guest:web');
-    Route::post('/login', [LoginController::class, 'userLogin']);
+    Route::get('/login', [UserLoginController::class, 'showUserLoginForm'])->name('user.login');
+    Route::post('/login', [UserLoginController::class, 'userLogin']);
 });
 
 Route::middleware(['auth:web'])->group(function () {
@@ -62,10 +63,10 @@ Route::middleware(['auth:web'])->group(function () {
     Route::resource('tasks', TaskController::class);
 });
 Route::middleware('guest:admin')->prefix('admin')->group(function () {
-    Route::get('login', [LoginController::class, 'showAdminLoginForm'])->name('admin.login');
-    Route::post('login', [LoginController::class, 'adminLogin']);
+    Route::get('login', [AdminLoginController::class, 'showAdminLoginForm'])->name('admin.login');
+    Route::post('login', [AdminLoginController::class, 'adminLogin']);
 });
-Route::post('admin/logout', [LoginController::class, 'logout'])->name('admin.logout');
+Route::post('admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
 
 
@@ -85,32 +86,4 @@ Route::prefix('admin')->middleware(['auth:admin'])->group(function () {
     Route::get('/', function () {
         return view('home');
     });
-});
-
-Route::get('/test-mail', function () {
-    $task = \App\Models\Task::find(34);
-    Mail::to($task->user->email)->send(new \App\Mail\TaskReminderMail($task));
-    return 'Gửi thử thành công!';
-});
-Route::get('/test-reminder', function () {
-    dispatch(new \App\Jobs\SendTaskReminderEmail());
-    return 'Đã dispatch job reminder!';
-});
-
-
-Route::get('/send-test-noti', function () {
-    $user = User::first();
-    $task = Task::first(); // hoặc tạo giả nếu chưa có task
-
-    $user->notify(new TaskReminderNotification($task));
-
-    return 'Sent!';
-});
-
-use App\Jobs\SendTaskReminderEmail;
-
-
-Route::get('/test-send-mail-job', function () {
-    SendTaskReminderEmail::dispatch();
-    return 'Gửi job thành công!';
 });
