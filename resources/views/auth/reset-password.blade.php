@@ -44,21 +44,31 @@
                                 </div>
 
                                 <div class="p-2">
-                                    <form action="auth-signin-basic">
+                                    <form method="POST" action="{{route('password.update')}}">
+                                        @csrf
+                                            <input type="hidden" name="token" value="{{ $token }}">
+                                            <input type="hidden" name="email" value="{{ $email }}">
+
                                         <div class="mb-3">
                                             <label class="form-label" for="password-input">Password</label>
                                             <div class="position-relative auth-pass-inputgroup">
-                                                <input type="password" class="form-control pe-5 password-input" onpaste="return false" placeholder="Enter password" id="password-input" aria-describedby="passwordInput" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" required>
+                                                <input type="password" name="password"  class="form-control pe-5 password-input @error('password') is-invalid @enderror" onpaste="return false" placeholder="Enter password" id="password-input" aria-describedby="passwordInput"  required>
+                                                    
                                                 <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button"
                                                     id="password-addon"><i class="ri-eye-fill align-middle"></i></button>
                                             </div>
+                                            @error('password')
+                                                <div class="invalid-feedback d-block">
+                                                    {{ $message }}
+                                                </div>
+                                            @enderror
                                             <div id="passwordInput" class="form-text">Must be at least 8 characters.</div>
                                         </div>
 
                                         <div class="mb-3">
                                             <label class="form-label" for="confirm-password-input">Confirm Password</label>
                                             <div class="position-relative auth-pass-inputgroup mb-3">
-                                                <input type="password" class="form-control pe-5 password-input" onpaste="return false" placeholder="Confirm password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" id="confirm-password-input" required>
+                                                <input type="password" name="password_confirmation" class="form-control pe-5 password-input" onpaste="return false" placeholder="Confirm password"  id="confirm-password-input" required>
                                                 <button class="btn btn-link position-absolute end-0 top-0 text-decoration-none text-muted password-addon" type="button" id="confirm-password-input"><i class="ri-eye-fill align-middle"></i></button>
                                             </div>
                                         </div>

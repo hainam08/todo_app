@@ -76,6 +76,10 @@
                                     </div>
 
                                     <div class="mb-3">
+                                        <div class="float-end">
+                                                <a href="{{route('password.forgot')}}" class="text-muted">Forgot
+                                                    password?</a>
+                                            </div>
                                         <label class="form-label" for="password-input">Password <span class="text-danger">*</span></label>
                                         <div class="position-relative auth-pass-inputgroup mb-3">
                                             <input type="password" class="form-control password-input pe-5 @error('password') is-invalid @enderror" name="password" placeholder="Enter password" id="password-input">
@@ -89,7 +93,7 @@
                                     </div>
 
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="auth-remember-check">
+                                        <input class="form-check-input" type="checkbox" id="auth-remember-check" name="remember" value="1" >
                                         <label class="form-check-label" for="auth-remember-check">Remember me</label>
                                     </div>
 

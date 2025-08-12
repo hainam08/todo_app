@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminTaskController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\User\TaskController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
@@ -60,8 +61,16 @@ Route::middleware(['auth:web'])->group(function () {
     Route::post('/tasks/{task}/toggle-reminder', [TaskController::class, 'toggleReminder'])->name('tasks.toggleReminder');
     Route::post('bulk-complete-tasks', [TaskController::class, 'bulkComplete'])->name('tasks.bulk-complete');
     Route::patch('tasks/{task}/toggle', [TaskController::class, 'toggleStatus'])->name('tasks.toggle');
+    Route::put('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
     Route::resource('tasks', TaskController::class);
+    
 });
+
+Route::get('user/forgot-password',[ResetPasswordController::class,'showForgotForm'])->name('password.forgot');
+Route::post('forgot-password',[ResetPasswordController::class,'sendResetLink'])->name('password.email');
+Route::get('reset-password',[ResetPasswordController::class,'showResetForm'])->name('password.reset');
+Route::post('reset-password',[ResetPasswordController::class,'resetPassword'])->name('password.update');
+
 Route::middleware('guest:admin')->prefix('admin')->group(function () {
     Route::get('login', [AdminLoginController::class, 'showAdminLoginForm'])->name('admin.login');
     Route::post('login', [AdminLoginController::class, 'adminLogin']);

@@ -14,7 +14,7 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
     use SoftDeletes;
-    
+
     /**
      * The attributes that are mass assignable.
      *
@@ -49,8 +49,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-     public function tasks()
+    public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+    public function EmailVerificationToken()
+    {
+        return $this->hasOne(EmailVerificationToken::class);
     }
 }

@@ -9,19 +9,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class WelcomeMail extends Mailable
+class ResetPasswordMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public $user;
     public $url;
+    public $user;
     public function __construct($user,$token)
     {
-          $this->user = $user;
-          $this->url = url('/verify/' . $token);
+        $this->user = $user;
+        $this->url = url('reset-password?token='.$token);
     }
 
     /**
@@ -30,7 +30,7 @@ class WelcomeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Welcome Mail',
+            subject: 'Yêu cầu đặt lại mật khẩu',
         );
     }
 
@@ -40,10 +40,10 @@ class WelcomeMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.welcome',
+            view: 'emails.password_reset',
             with:[
-                'user'=> $this->user,
-                'url'=>$this->url,
+                'user'=>$this->user,
+                'url'=>$this->url
             ]
         );
     }
@@ -57,6 +57,4 @@ class WelcomeMail extends Mailable
     {
         return [];
     }
-    
- 
 }

@@ -2,27 +2,27 @@
 
 namespace App\Jobs;
 
-use App\Mail\WelcomeMail;
+use App\Mail\ResetPasswordMail;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Mail;
+use Mail;
 
-class SendWelcomeEmail implements ShouldQueue
+class SendResetPasswordEmail implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public $user;
-    public $token;
     /**
      * Create a new job instance.
      */
-    public function __construct($user,$token)
+    public $user;
+    public $token;
+    public function __construct($user, $token)
     {
         $this->user = $user;
-        $this-> token =$token;
+        $this->token = $token;
     }
 
     /**
@@ -30,6 +30,6 @@ class SendWelcomeEmail implements ShouldQueue
      */
     public function handle(): void
     {
-        Mail::to($this->user->email)->send(new WelcomeMail($this->user,$this->token));
+        Mail::to($this->user->email)->send(new ResetPasswordMail($this->user, $this->token));
     }
 }

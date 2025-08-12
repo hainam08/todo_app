@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AdminLoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -18,20 +19,9 @@ class AdminLoginController extends Controller
     }
     
 
-    public function adminLogin(Request $request)
+    public function adminLogin(AdminLoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
-
-        $admin = Admin::where('email', $credentials['email'])->first();
-        if ($admin && Hash::check($credentials['password'], $admin->password)) {
-            Auth::guard('admin')->login($admin);
-            return redirect()->route('admin.dashboard');
-        }
-
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        return redirect()->route('admin.dashboard');
     }
    
     

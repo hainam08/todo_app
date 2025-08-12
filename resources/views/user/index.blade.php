@@ -102,29 +102,27 @@
                        <td>
                             {{ $task->remind_at ? \Carbon\Carbon::parse($task->remind_at)->format('d/m/Y H:i') : 'Không có' }}
 
-                            <form action="{{ route('tasks.toggleReminder', $task->id) }}" method="POST" style="display:inline-block; margin-left:10px;">
-                                @csrf
+                           
                                
-                                  <button type="submit" class="btn btn-sm border-0 bg-transparent">
+                                <button type="submit" class="btn btn-sm border-0 bg-transparent toggle-reminder"
+                                data-task-id="{{$task->id}}"
+                                title="{{$task->is_reminder_enabled ? 'Nhắc nhở đang bật' : 'Nhắc nhở đang tắt'}}">
                                     @if ($task->is_reminder_enabled)
-                                        <i class="fas fa-bell text-success" title="Nhắc nhở đang bật"></i>
+                                        <i class="fas fa-bell text-success" id="icon-{{$task->id}}"></i>
                                     @else
-                                        <i class="fas fa-bell-slash text-muted" title="Nhắc nhở đang tắt"></i>
+                                        <i class="fas fa-bell-slash text-muted" id="icon-{{$task->id}}"></i>
                                     @endif
                                 </button>
-                            </form>
                         </td>
 
                         <td>
                             <!-- Form cập nhật trạng thái riêng -->
-                            <form action="{{ route('tasks.update', $task) }}" method="POST">
-                                @csrf
-                                @method('PUT')
-                                <select name="status" onchange="this.form.submit()" class="form-select form-select-sm
-                                    {{ $task->status == 'New' ? 'bg-info text-white' : '' }}
-                                    {{ $task->status == 'Inprogress' ? 'bg-warning text-dark' : '' }}
-                                    {{ $task->status == 'Pending' ? 'bg-secondary text-white' : '' }}
-                                    {{ $task->status == 'Completed' ? 'bg-success text-white' : '' }}"
+                            
+                                <select name="status" class="form-select form-select-sm task-status-select"
+                                   data-task-id = "{{$task->id}}"
+                                   data-title = "{{$task->title}}"
+                                   data-description = "{{$task->description}}"
+                                   data-due-date = "{{$task->due_date}}"
                                                         
                                 
                                 >
@@ -136,7 +134,7 @@
                                 <input type="hidden" name="title" value="{{ $task->title }}">
                                 <input type="hidden" name="description" value="{{ $task->description }}">
                                 <input type="hidden" name="due_date" value="{{ $task->due_date }}">
-                            </form>
+                            
                         </td>
                         <td>
                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editTaskModal{{ $task->id }}">
@@ -186,5 +184,107 @@
         const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
         modal.show();
     }
+
+
+    // toggle nhắc nhở bằng fetch ajax
+    document.addEventListener( 'DOMContentLoaded', () => {
+        // Tìm tất cả nút có class "toggle-reminder"
+        document.querySelectorAll('.toggle-reminder').forEach(btn => {
+            // Gắn sự kiện click vào mỗi nút
+            btn.addEventListener('click', async () => {
+                const id = btn.dataset.taskId; // Lấy ID từ data-task-id
+
+                try {
+                    // Gửi POST request qua fetch
+                    const res = await fetch(`/tasks/${id}/toggle-reminder`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: '{}' // Không cần gửi thêm gì
+                    });
+
+                    if (!res.ok) throw new Error('Lỗi từ server');
+
+                    // Nhận dữ liệu JSON từ server
+                    const { is_reminder_enabled } = await res.json();
+
+                    // Tìm thẻ <i> của icon chuông để thay đổi class
+                    const icon = document.getElementById(`icon-${id}`);
+                    icon.className = is_reminder_enabled
+                        ? 'fas fa-bell text-success'         // Hiển thị chuông bật
+                        : 'fas fa-bell-slash text-muted';    // Hiển thị chuông tắt
+
+                    // Cập nhật title (tooltip)
+                    btn.title = is_reminder_enabled ? 'Nhắc nhở đang bật' : 'Nhắc nhở đang tắt';
+
+                } catch (err) {
+                    console.error(err);
+                    alert('Không thể cập nhật nhắc nhở!');
+                }
+            });
+        });
+    });
+
+    // cập nhật trạng thái
+   document.addEventListener('DOMContentLoaded', function () {
+    const selects = document.querySelectorAll('.task-status-select');
+    const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    selects.forEach(select => {
+        let preValue = select.value;
+        select.addEventListener('focus',function(){
+            preValue = this.value;
+        })
+        select.addEventListener('change', async function () {
+            const taskId = this.dataset.taskId;
+            const title = this.dataset.title;
+            const description = this.dataset.description;
+            const dueDate = this.dataset.dueDate;
+            const status = this.value;
+
+            try {
+                const response = await fetch(`/tasks/${taskId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrf,
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        description: description,
+                        due_date: dueDate,
+                        status: status
+                    })
+                });
+
+                if (!response.ok) throw new Error('Lỗi khi cập nhật!');
+                const result = await response.json();
+
+                // ✅ Hiệu ứng màu viền xanh để biết đã cập nhật xong
+                this.classList.add('border-success');
+                setTimeout(() => {
+                    this.classList.remove('border-success');
+                }, 1000);
+
+                // ✅ (Tùy chọn) Hiện thông báo nhỏ
+                const msg = document.createElement('span');
+                msg.textContent = '✓ Đã lưu';
+                msg.style.color = 'green';
+                msg.style.marginLeft = '10px';
+                this.parentNode.appendChild(msg);
+                setTimeout(() => msg.remove(), 1500);
+
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi cập nhật task.');
+                this.value = preValue;
+            }
+        });
+    });
+});
+
+
 </script>
 @endsection

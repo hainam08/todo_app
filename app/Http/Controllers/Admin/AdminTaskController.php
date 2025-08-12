@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\UpadateTaskRequest;
 use Illuminate\Support\Facades\Log;
 
 class AdminTaskController extends Controller
@@ -46,15 +47,9 @@ class AdminTaskController extends Controller
         return view('admin.tasks-edit', compact('task'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpadateTaskRequest $request, $id)
     {
-        try {
-            $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'due_date' => 'nullable|date',
-                'status' => 'required|in:New,Inprogress,Completed,Pending',
-            ]);
+        
 
             $task = Task::findOrFail($id);
             $task->update([
@@ -64,43 +59,19 @@ class AdminTaskController extends Controller
                 'status' => $request->status,
             ]);
 
-            return redirect()->route('admin.tasks.index', [
-                'search' => $request->search,
-                'status' => $request->status,
-                'due_date' => $request->due_date,
-                'user_id' => $request->user_id,
-            ])->with('success', 'Cập nhật công việc thành công.');
-        } catch (\Exception $e) {
-            Log::error('Error in update: ' . $e->getMessage());
-            return redirect()->route('admin.tasks.index', [
-                'search' => $request->search,
-                'status' => $request->status,
-                'due_date' => $request->due_date,
-                'user_id' => $request->user_id,
-            ])->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-        }
+            return redirect()
+            ->route('admin.tasks.index',$request->only('search','status','due_date','user_id'))
+            ->with('success', 'Cập nhật công việc thành công.');
+       
     }
 
     public function destroy(Request $request, $id)
     {
-        try {
+       
             $task = Task::findOrFail($id);
             $task->delete();
-            return redirect()->route('admin.tasks.index', [
-                'search' => $request->search,
-                'status' => $request->status,
-                'due_date' => $request->due_date,
-                'user_id' => $request->user_id,
-            ])->with('success', 'Xóa công việc thành công.');
-        } catch (\Exception $e) {
-            Log::error('Error in destroy: ' . $e->getMessage());
-            return redirect()->route('admin.tasks.index', [
-                'search' => $request->search,
-                'status' => $request->status,
-                'due_date' => $request->due_date,
-                'user_id' => $request->user_id,
-            ])->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-        }
+            return redirect()
+            ->route('admin.tasks.index', $request->only('search','status','due_date','user_id'))
+            ->with('success', 'Xóa công việc thành công.');
     }
 }
-?>

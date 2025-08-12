@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Http\Controllers\User;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Carbon;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use PhpParser\Node\Expr\FuncCall;
 
 class TaskController extends Controller
 {
@@ -17,10 +19,8 @@ class TaskController extends Controller
     {
 
         $notifications = auth()->user()->notifications()->latest()->take(5)->get();
-        
-        return view('user.dashboard', compact('notifications'));
-       
 
+        return view('user.dashboard', compact('notifications'));
     }
 
     public function index(Request $request)
@@ -73,7 +73,7 @@ class TaskController extends Controller
             'remind_at' => $remindAt,
             'status' => $request->status,
         ]);
-        //  dd($remindAt,$dueDate);
+
 
         return redirect()->route('user.index')->with('success', 'Thêm công việc thành công.');
     }
@@ -117,6 +117,21 @@ class TaskController extends Controller
 
         return redirect()->route('user.index')->with('success', 'Cập nhật công việc thành công.');
     }
+    public function updateStatus(Request $request, Task $task){
+        if($task->user_id !=Auth::id()){
+            return response()->json(['error','Ban khong co quyen'],403);
+        }
+        $request->validate([
+            'status'=>'required|in:New,Inprogress,Completed,Pending',
+        ]);
+        $task->status = $request->status;
+        $task->save();
+       return response()->json([
+                'status' => $task->status,
+                'message' => 'Cập nhật thành công.'
+            ]);
+
+    }
 
     public function destroy(Task $task)
     {
@@ -129,23 +144,7 @@ class TaskController extends Controller
         return redirect()->route('user.index')->with('success', 'Xóa công việc thành công.');
     }
 
-    // public function toggleStatus(Task $task)
-    // {
-    //     if ($task->user_id !== Auth::id()) {
-    //         return redirect()->route('user.dashboard')->with('error', 'Bạn không có quyền thay đổi trạng thái công việc này.');
-    //     }
 
-    //     // Kiểm tra trạng thái hiện tại và chỉ toggle giữa Completed và Inprogress
-    //     $newStatus = in_array($task->status, ['New', 'Inprogress', 'Completed', 'Pending'])
-    //         ? ($task->status === 'Completed' ? 'Inprogress' : 'Completed')
-    //         : 'Inprogress';
-
-    //     $task->update([
-    //         'status' => $newStatus,
-    //     ]);
-
-    //     return redirect()->route('user.dashboard')->with('success', 'Cập nhật trạng thái công việc thành công.');
-    // }
     public function toggleReminder(Task $task)
     {
         if ($task->user_id !== Auth::id()) {
@@ -155,7 +154,10 @@ class TaskController extends Controller
         $task->is_reminder_enabled = !$task->is_reminder_enabled;
         $task->save();
 
-        return redirect()->back()->with('success', 'Cập nhật trạng thái nhắc nhở thành công.');
+        return response()->json([
+            'success' => true,
+            'is_reminder_enabled' => $task->is_reminder_enabled
+        ]);
     }
 
     public function bulkComplete(Request $request)
